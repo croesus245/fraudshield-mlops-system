@@ -1,0 +1,138 @@
+# FraudShield 🛡️
+
+**Real-time fraud detection with ML + business rules.**
+
+## What This Does
+
+```
+Transaction comes in
+       ↓
+┌─────────────────┐
+│  Is user on     │ ──YES──→ BLOCK (skip ML)
+│  blocklist?     │
+└────────┬────────┘
+         │ NO
+         ↓
+┌─────────────────┐
+│  ML Model       │ → Risk Score (0-1)
+│  (XGBoost)      │
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│  Score >= 0.9   │ ──YES──→ BLOCK
+│  Score >= 0.7   │ ──YES──→ CHALLENGE (OTP)
+│  Score < 0.3    │ ──YES──→ ALLOW
+└────────┬────────┘
+         ↓
+    Return decision + explanation
+```
+
+## Quick Start
+
+```bash
+# 1. Install
+pip install -e .
+
+# 2. Generate fake data (realistic fraud patterns)
+python -m scripts.generate_data
+
+# 3. Train model
+python -m scripts.train
+
+# 4. Start API
+python -m scripts.serve
+```
+
+## API Usage
+
+```bash
+# Simple check
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"transaction_id": "t1", "amount": 5000, "user_id": "u1", "merchant_id": "m1", "merchant_category": "retail"}'
+
+# Full check with explanation
+curl -X POST http://localhost:8000/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transaction": {"transaction_id": "t1", "amount": 50000, "user_id": "u1", "merchant_id": "m1", "merchant_category": "electronics", "timestamp": "2024-01-15T10:00:00Z"},
+    "device_signals": {"is_vpn": true, "is_new_device": true}
+  }'
+```
+
+Response:
+```json
+{
+  "risk_score": 0.75,
+  "risk_tier": "high",
+  "action": "challenge",
+  "challenge_type": "otp",
+  "risk_reasons": [
+    {"feature": "is_vpn", "description": "VPN/proxy detected"},
+    {"feature": "is_new_device", "description": "First transaction from this device"}
+  ]
+}
+```
+
+## Project Structure
+
+```
+fraudshield/
+├── scripts/
+│   ├── generate_data.py  # Create synthetic fraud data
+│   ├── train.py          # Train the model
+│   └── serve.py          # Start the API
+├── src/
+│   ├── data/             # Schemas + data contracts
+│   ├── features/         # Feature engineering
+│   ├── models/           # ML model + predictor
+│   ├── rules/            # Business rules engine
+│   └── serving/          # FastAPI app
+├── configs/              # Configuration
+└── tests/                # Tests
+```
+
+## How It Detects Fraud
+
+**Signals we look at:**
+| Signal | What it means | Why it matters |
+|--------|---------------|----------------|
+| `is_vpn` | Using VPN/proxy | Hiding real location |
+| `is_new_device` | Never seen this device | Could be stolen credentials |
+| `txn_count_1h` | Transactions in last hour | High velocity = suspicious |
+| `account_age_days` | How old is the account | New accounts are riskier |
+| `previous_fraud_flags` | Past fraud on this account | Repeat offenders |
+
+**Rules that override ML:**
+- Blocked user → instant BLOCK
+- 20+ transactions/hour → BLOCK (velocity limit)
+- VPN + high amount → CHALLENGE
+
+## The Delayed Labels Problem
+
+In real life, you don't know immediately if a transaction is fraud.
+
+Labels arrive **30-90 days later** via:
+- Chargebacks (customer disputes)
+- Investigations
+- User reports
+
+This project handles this by:
+1. Logging predictions with timestamps
+2. Joining labels when they arrive
+3. Evaluating model on rolling windows
+
+## Files Explained
+
+| File | What it does |
+|------|--------------|
+| `scripts/generate_data.py` | Creates realistic synthetic fraud data |
+| `scripts/train.py` | Trains XGBoost model with time-based split |
+| `src/features/pipeline.py` | Transforms raw data → ML features |
+| `src/models/predictor.py` | Makes predictions + applies rules |
+| `src/rules/engine.py` | Business rules (blocklists, velocity) |
+| `src/serving/app.py` | FastAPI endpoints |
+
+## License
+
+MIT

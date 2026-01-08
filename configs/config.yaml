@@ -1,0 +1,379 @@
+# FraudShield Configuration
+# ========================
+
+# Data settings
+data:
+  raw_path: "data/raw"
+  processed_path: "data/processed"
+  predictions_path: "data/predictions"
+  labels_path: "data/labels"
+  
+  # Label delay simulation (days)
+  label_delay_min: 30
+  label_delay_max: 90
+  
+  # Data contract thresholds
+  validation:
+    max_null_rate: 0.05
+    amount_min: 0
+    amount_max: 100000
+    required_columns:
+      - transaction_id
+      - timestamp
+      - amount
+      - merchant_id
+      - merchant_category
+      - user_id
+      - device_type
+      - location_country
+
+# Feature engineering
+features:
+  # Basic numerical features
+  numerical:
+    - amount
+    - hour_of_day
+    - day_of_week
+    - days_since_last_txn
+    - txn_count_1h
+    - txn_count_24h
+    - txn_amount_1h
+    - txn_amount_24h
+    - avg_amount_30d
+    - std_amount_30d
+  
+  # Categorical features
+  categorical:
+    - merchant_category
+    - device_type
+    - location_country
+    - is_weekend
+    - is_night
+    - transaction_type
+    - channel
+  
+  # ============================================================
+  # USER BEHAVIOR SIGNALS
+  # "Is this user behaving normally?"
+  # ============================================================
+  user_signals:
+    account_age_days: true           # New accounts = higher risk
+    is_verified: true                # KYC completed?
+    verification_level: true         # none/basic/full
+    previous_fraud_flags: true       # Past fraud incidents
+    total_lifetime_transactions: true
+    total_lifetime_amount: true
+    days_since_last_transaction: true
+    avg_transaction_amount: true     # User's typical amount
+    transaction_frequency: true      # Transactions per week
+    
+  # ============================================================
+  # DEVICE & SESSION SIGNALS
+  # "Is this device/session suspicious?"
+  # ============================================================
+  device_signals:
+    is_new_device: true              # First time seeing this device
+    is_vpn: true                     # VPN/proxy detected
+    is_emulator: true                # Android emulator detected
+    is_rooted: true                  # Rooted/jailbroken device
+    login_hour_deviation: true       # Unusual login time for user
+    device_age_days: true            # How long we've seen this device
+    devices_last_30d: true           # Device count (too many = suspicious)
+    failed_logins_24h: true          # Failed login attempts
+    session_duration_minutes: true   # Very short = suspicious
+    ip_country_mismatch: true        # IP location vs account location
+    
+  # ============================================================
+  # NETWORK & RELATIONSHIP SIGNALS
+  # "Is this connected to known bad actors?"
+  # ============================================================
+  network_signals:
+    shared_bank_accounts: true       # Same bank acct across users
+    shared_devices_count: true       # Device used by multiple accounts
+    shared_ip_count: true            # IP used by multiple accounts
+    merchant_complaint_rate: true    # Merchant's complaint history
+    merchant_fraud_rate: true        # Merchant's fraud history
+    merchant_age_days: true          # New merchants = higher risk
+    recipient_fraud_flags: true      # Sending to risky recipient
+    refund_abuse_score: true         # Refund pattern anomaly
+    network_risk_score: true         # Graph-based risk propagation
+    
+  # ============================================================
+  # VELOCITY / AGGREGATION FEATURES
+  # "Is behavior changing too fast?"
+  # ============================================================
+  velocity:
+    windows: [10m, 1h, 6h, 24h, 7d, 30d]
+    
+    # Per-window aggregations
+    aggregations:
+      - transaction_count
+      - amount_sum
+      - amount_avg
+      - amount_max
+      - unique_merchants
+      - unique_recipients
+      - unique_ips
+      - failed_attempts
+      - declined_count
+    
+  # Aggregation windows (hours) - legacy format
+  aggregation_windows: [0.17, 1, 6, 24, 168, 720]  # 10m, 1h, 6h, 24h, 7d, 30d
+
+# Model settings
+model:
+  name: "xgboost_v1"
+  type: "xgboost"
+  
+  params:
+    n_estimators: 200
+    max_depth: 6
+    learning_rate: 0.1
+    min_child_weight: 5
+    subsample: 0.8
+    colsample_bytree: 0.8
+    scale_pos_weight: 10  # Handle class imbalance
+    eval_metric: "aucpr"
+    early_stopping_rounds: 20
+    random_state: 42
+  
+  # Threshold for binary classification
+  threshold: 0.5
+  
+  # Model versioning
+  artifacts_path: "artifacts/models"
+
+# Evaluation settings
+evaluation:
+  # Global metrics
+  metrics:
+    - precision
+    - recall
+    - f1
+    - roc_auc
+    - pr_auc
+    - brier_score
+  
+  # Slice definitions for disaggregated evaluation
+  slices:
+    merchant_category:
+      - retail
+      - travel
+      - entertainment
+      - groceries
+      - other
+    
+    amount_bucket:
+      - name: "low"
+        min: 0
+        max: 100
+      - name: "medium"
+        min: 100
+        max: 1000
+      - name: "high"
+        min: 1000
+        max: 10000
+      - name: "very_high"
+        min: 10000
+        max: null
+    
+    time_of_day:
+      - name: "night"
+        hours: [0, 1, 2, 3, 4, 5]
+      - name: "morning"
+        hours: [6, 7, 8, 9, 10, 11]
+      - name: "afternoon"
+        hours: [12, 13, 14, 15, 16, 17]
+      - name: "evening"
+        hours: [18, 19, 20, 21, 22, 23]
+  
+  # Minimum performance thresholds (for CI gates)
+  thresholds:
+    precision_min: 0.70
+    recall_min: 0.60
+    pr_auc_min: 0.75
+    
+    # Slice-specific thresholds
+    high_amount_recall_min: 0.80  # Critical: don't miss high-value fraud
+    new_merchant_precision_min: 0.65  # Accept slightly lower precision for new merchants
+
+# Drift detection settings
+monitoring:
+  drift:
+    # Feature drift (Population Stability Index)
+    psi_threshold: 0.2
+    psi_warning_threshold: 0.1
+    
+    # Prediction drift (KL divergence)
+    kl_threshold: 0.1
+    
+    # Performance drift (requires labels)
+    precision_drop_threshold: 0.10
+    recall_drop_threshold: 0.10
+    
+    # Evaluation windows
+    reference_window_days: 30
+    current_window_days: 7
+  
+  # Alerting
+  alerts:
+    enabled: true
+    channels:
+      - type: "log"
+      - type: "file"
+        path: "logs/alerts.log"
+  
+  # Label reconciliation
+  label_join:
+    # How often to run label joining (hours)
+    frequency_hours: 24
+    # Maximum age for predictions to join (days)
+    max_prediction_age_days: 120
+
+# Serving settings
+serving:
+  host: "0.0.0.0"
+  port: 8000
+  
+  # Latency requirements
+  latency:
+    p50_target_ms: 20
+    p99_target_ms: 50
+  
+  # Request validation
+  validate_requests: true
+  
+  # Logging
+  log_predictions: true
+  log_path: "data/predictions"
+
+# ============================================================
+# RULE ENGINE - Actions based on risk score
+# "What do we DO with the score?"
+# ============================================================
+rule_engine:
+  # Risk score thresholds
+  thresholds:
+    allow: 0.30          # Below this: auto-approve
+    challenge: 0.70      # Between allow and this: require verification
+    block: 0.90          # Above this: auto-block
+    
+  # Challenge types (ordered by friction)
+  challenges:
+    - type: otp
+      description: "Send OTP to registered phone"
+      max_attempts: 3
+      
+    - type: security_question
+      description: "Ask security question"
+      max_attempts: 2
+      
+    - type: selfie_verification
+      description: "Request selfie with ID"
+      timeout_minutes: 30
+      
+    - type: manual_review
+      description: "Hold for human review"
+      sla_hours: 4
+      
+    - type: hold_funds
+      description: "Process but hold funds"
+      hold_duration_hours: 72
+  
+  # Special rules (override ML score)
+  special_rules:
+    # Always block
+    - name: "blocked_user"
+      condition: "user.is_blocked == true"
+      action: "block"
+      reason: "User is on blocklist"
+      
+    - name: "sanctioned_country"
+      condition: "location_country in ['XX', 'YY']"
+      action: "block"
+      reason: "Sanctioned country"
+      
+    - name: "velocity_breach"
+      condition: "txn_count_1h > 50"
+      action: "block"
+      reason: "Velocity limit exceeded"
+    
+    # Always challenge
+    - name: "high_amount_new_user"
+      condition: "amount > 100000 and account_age_days < 7"
+      action: "challenge"
+      challenge_type: "manual_review"
+      reason: "High amount from new account"
+      
+    - name: "new_device_high_amount"
+      condition: "is_new_device == true and amount > 50000"
+      action: "challenge"
+      challenge_type: "otp"
+      reason: "High amount from new device"
+    
+    # Always allow (trusted)
+    - name: "whitelisted_merchant"
+      condition: "merchant_id in whitelisted_merchants"
+      action: "allow"
+      reason: "Whitelisted merchant"
+  
+  # Transaction type specific thresholds
+  transaction_overrides:
+    withdrawal:
+      block_threshold: 0.70      # Lower threshold for withdrawals
+      challenge_threshold: 0.40
+      
+    refund:
+      block_threshold: 0.60      # Even lower for refunds
+      challenge_threshold: 0.30
+      
+    transfer:
+      block_threshold: 0.75
+      challenge_threshold: 0.50
+
+# ============================================================
+# EXPLAINABILITY - Why was this flagged?
+# ============================================================
+explainability:
+  enabled: true
+  max_reasons: 5
+  
+  # Feature importance method
+  method: "shap"  # shap, lime, or feature_importance
+  
+  # Human-readable reason templates
+  reason_templates:
+    amount_zscore_high: "Transaction amount is unusually high for this user"
+    amount_zscore_low: "Transaction amount is unusually low (test transaction?)"
+    is_new_device: "Transaction from a device we haven't seen before"
+    is_vpn: "Transaction through VPN or proxy connection"
+    is_night: "Transaction at unusual hour ({hour}:00)"
+    login_hour_deviation_high: "Login time differs from user's normal pattern"
+    txn_count_1h_high: "Too many transactions in the last hour ({value})"
+    txn_count_24h_high: "Too many transactions in the last 24 hours ({value})"
+    days_since_last_txn_high: "First transaction after long inactivity ({value} days)"
+    account_age_days_low: "Account is very new ({value} days old)"
+    is_verified_false: "Account has not completed verification"
+    merchant_fraud_rate_high: "Merchant has elevated fraud rate"
+    merchant_complaint_rate_high: "Merchant has elevated complaint rate"
+    recipient_fraud_flags: "Recipient has fraud history"
+    shared_devices_count_high: "Device shared across multiple accounts"
+    shared_bank_accounts_high: "Bank account used by multiple users"
+    refund_abuse_score_high: "Pattern consistent with refund abuse"
+    failed_logins_24h_high: "Multiple failed login attempts recently"
+    network_risk_score_high: "Connected to high-risk network cluster"
+
+# CI/CD settings
+ci:
+  # Run these checks on every PR
+  checks:
+    - schema_validation
+    - model_performance
+    - slice_metrics
+    - latency_benchmark
+  
+  # Performance regression thresholds
+  regression:
+    max_precision_drop: 0.02
+    max_recall_drop: 0.02
+    max_latency_increase_ms: 10

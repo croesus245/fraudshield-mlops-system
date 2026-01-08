@@ -1,0 +1,257 @@
+calibration:
+  brier_score: 0.006397861521691084
+  calibration_curve:
+    prob_pred:
+    - 0.005818650755014889
+    - 0.15501788859405824
+    - 0.25546860694885254
+    - 0.35868897537390393
+    - 0.4543021559715271
+    - 0.563232938448588
+    - 0.6368970076243082
+    - 0.7629866898059845
+    - 0.8479817509651184
+    - 0.9712988620712644
+    prob_true:
+    - 0.0010438413361169101
+    - 0.06451612903225806
+    - 0.0
+    - 0.16666666666666666
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.16666666666666666
+    - 0.6666666666666666
+    - 1.0
+  ece: !!python/object/apply:numpy._core.multiarray.scalar
+  - &id001 !!python/object/apply:numpy.dtype
+    args:
+    - f8
+    - false
+    - true
+    state: !!python/tuple
+    - 3
+    - <
+    - null
+    - null
+    - null
+    - -1
+    - -1
+    - 0
+  - !!binary |
+    kxgEQlfXiT8=
+  mce: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    VVVV1XVh5D8=
+fraud_rate: 0.0145
+metrics:
+  brier_score: 0.006397861521691084
+  f1: 0.7384615384615385
+  false_negatives: 5
+  false_positives: 12
+  log_loss: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    RraTyvs0mz8=
+  n_samples: 2000
+  positive_rate: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    GQRWDi2yjT8=
+  pr_auc: 0.8777356335579144
+  precision: 0.6666666666666666
+  predicted_positive_rate: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    O99PjZdukj8=
+  recall: 0.8275862068965517
+  roc_auc: 0.9857940131912735
+  specificity: !!python/object/apply:numpy._core.multiarray.scalar
+  - *id001
+  - !!binary |
+    4vyH8x/O7z8=
+  true_negatives: 1959
+  true_positives: 24
+slice_metrics:
+  merchant_category: !!python/object:pandas.core.frame.DataFrame
+    _flags:
+      allows_duplicate_labels: true
+    _metadata: []
+    _mgr: !!python/object/apply:pandas.core.internals.managers.BlockManager
+    - !!python/tuple
+      - !!python/object/apply:pandas._libs.internals._unpickle_block
+        - !!python/object/apply:numpy._core.multiarray._reconstruct
+          args:
+          - &id002 !!python/name:numpy.ndarray ''
+          - !!python/tuple
+            - 0
+          - !!binary |
+            Yg==
+          state: !!python/tuple
+          - 1
+          - !!python/tuple
+            - 10
+            - 7
+          - *id001
+          - false
+          - !!binary |
+            kiRJkiRJ4j9VVVVVVVXlPwAAAAAAAOg/q6qqqqqq6j9VVVVVVVXVPwAAAAAAAOg/VVVVVVVV5T+a
+            mZmZmZnpPwAAAAAAAPA/AAAAAAAA4D8AAAAAAADwPwAAAAAAAPA/AAAAAAAA6D8AAAAAAADwP1VV
+            VVVVVeU/mpmZmZmZ6T8zMzMzMzPjPxdddNFFF+0/AAAAAAAA4D8AAAAAAADoP5qZmZmZmek/fN3r
+            Xve67z9605ve9KbvP3YEpdl04+8/jawuw17p7z8y9trlR7rvP4bKDlOX2+8//rqk8mHc7z/+vsTy
+            YuTvPwAAAAAAAPA/dfkNBbsH7j8AAAAAAADwPwAAAAAAAPA/5RdLfrHk7z8AAAAAAADwP4I8JchT
+            guw/AAAAAAAA8D+bkM2ld2TlPwAAAAAAAPA/AAAAAAAA8D8kSZIkSZLsPwAAAAAAAPA/AAAAoMjQ
+            fT8AAACAHbZ0PwAAAACWqIY/AAAAgLn3az8AAAAgGUd5PwAAAKBcO3w/AAAAIGtodT/uMIO++I2a
+            P/WdjUP5hZU/F25aHveqqj9LO4U7XRGRP5jHFnxBM5Y/tQZyfZWBmj/uaUShrfSXP8zgS02bXYw/
+            VxCTK4jJlT8o6uTyIviUP0wdimbj5os/DSd1Xx5bcT90uD877+KRP5Z7GmG5p4E/9bZO6R/bkz9B
+            TK4gJlegP4uNhu6D9Ys/+nfso7u9kD+Uui+PrQiKP3S4Pzvv4pE/YbmnEZZ7ij8=
+        - !!python/object/apply:numpy._core.multiarray._reconstruct
+          args:
+          - *id002
+          - !!python/tuple
+            - 0
+          - !!binary |
+            Yg==
+          state: !!python/tuple
+          - 1
+          - !!python/tuple
+            - 10
+          - &id003 !!python/object/apply:numpy.dtype
+            args:
+            - i8
+            - false
+            - true
+            state: !!python/tuple
+            - 3
+            - <
+            - null
+            - null
+            - null
+            - -1
+            - -1
+            - 0
+          - false
+          - !!binary |
+            AAAAAAAAAAABAAAAAAAAAAIAAAAAAAAABwAAAAAAAAAIAAAAAAAAAAkAAAAAAAAACgAAAAAAAAAL
+            AAAAAAAAAAwAAAAAAAAADQAAAAAAAAA=
+        - 2
+      - !!python/object/apply:pandas._libs.internals._unpickle_block
+        - !!python/object/apply:numpy._core.multiarray._reconstruct
+          args:
+          - *id002
+          - !!python/tuple
+            - 0
+          - !!binary |
+            Yg==
+          state: !!python/tuple
+          - 1
+          - !!python/tuple
+            - 5
+            - 7
+          - *id003
+          - false
+          - !!binary |
+            BAAAAAAAAAAGAAAAAAAAAAMAAAAAAAAABQAAAAAAAAABAAAAAAAAAAMAAAAAAAAAAgAAAAAAAAAD
+            AAAAAAAAAAMAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAIAAAAAAAAAAQAAAAAAAAABAAAAAAAAAGEB
+            AAAAAAAAEQEAAAAAAAAeAQAAAAAAAGkBAAAAAAAA6QAAAAAAAADgAAAAAAAAAOUAAAAAAAAAAQAA
+            AAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAABpAQAA
+            AAAAABoBAAAAAAAAJQEAAAAAAABvAQAAAAAAAOwAAAAAAAAA5QAAAAAAAADoAAAAAAAAAA==
+        - !!python/object/apply:numpy._core.multiarray._reconstruct
+          args:
+          - *id002
+          - !!python/tuple
+            - 0
+          - !!binary |
+            Yg==
+          state: !!python/tuple
+          - 1
+          - !!python/tuple
+            - 5
+          - *id003
+          - false
+          - !!binary |
+            AwAAAAAAAAAEAAAAAAAAAAUAAAAAAAAABgAAAAAAAAAOAAAAAAAAAA==
+        - 2
+      - !!python/object/apply:pandas._libs.internals._unpickle_block
+        - !!python/object/apply:numpy._core.multiarray._reconstruct
+          args:
+          - *id002
+          - !!python/tuple
+            - 0
+          - !!binary |
+            Yg==
+          state: !!python/tuple
+          - 1
+          - !!python/tuple
+            - 1
+            - 7
+          - &id004 !!python/object/apply:numpy.dtype
+            args:
+            - O8
+            - false
+            - true
+            state: !!python/tuple
+            - 3
+            - '|'
+            - null
+            - null
+            - null
+            - -1
+            - -1
+            - 63
+          - false
+          - - services
+            - travel
+            - food
+            - gaming
+            - retail
+            - entertainment
+            - online
+        - !!python/object/apply:builtins.slice
+          - 15
+          - 16
+          - 1
+        - 2
+    - - !!python/object/apply:pandas.core.indexes.base._new_Index
+        - !!python/name:pandas.core.indexes.base.Index ''
+        - data: !!python/object/apply:numpy._core.multiarray._reconstruct
+            args:
+            - *id002
+            - !!python/tuple
+              - 0
+            - !!binary |
+              Yg==
+            state: !!python/tuple
+            - 1
+            - !!python/tuple
+              - 16
+            - *id004
+            - false
+            - - precision
+              - recall
+              - f1
+              - true_positives
+              - false_positives
+              - true_negatives
+              - false_negatives
+              - specificity
+              - roc_auc
+              - pr_auc
+              - brier_score
+              - log_loss
+              - positive_rate
+              - predicted_positive_rate
+              - n_samples
+              - slice
+          name: null
+      - !!python/object/apply:pandas.core.indexes.base._new_Index
+        - !!python/name:pandas.core.indexes.range.RangeIndex ''
+        - name: null
+          start: 0
+          step: 1
+          stop: 7
+    _typ: dataframe
+    attrs: {}
+test_size: 2000
+timestamp: '2025-12-22T10:48:49.237193'
